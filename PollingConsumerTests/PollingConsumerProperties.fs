@@ -20,3 +20,18 @@ let ``transitionFromNoMessage returns corrent result when it should idle``
         idleRes |> Untimed.withResult nm.Result |> ReadyState
 
     expected =! actual
+
+[<Property>]
+let ``transitionFromNoMessage returns corrent result when it should not idle``
+    (nm:NoMessageData)
+    (idleRes : Timed<unit>) =
+
+    let shouldIdle _ = false
+    let idle _ = idleRes
+
+    let actual : State =
+        transitionFromNoMessage shouldIdle idle nm
+
+    let expected = StoppedState
+
+    expected =! actual
