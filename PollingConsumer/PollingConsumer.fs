@@ -3,7 +3,16 @@
 open System
 open TypeDrivenDevelopment.Timed
 
-type MessageHandler = unit -> Timed<unit>
+[<CustomEquality; NoComparison>]
+type MessageHandler =
+    {    Handle:unit -> Timed<unit>   }
+
+    override this.Equals obj =
+        match obj with
+        | :? MessageHandler as other -> Object.Equals (this.Handle, other.Handle)
+        | _ -> false
+
+    override this.GetHashCode () = (box this).GetHashCode()
 
 // State data
 
