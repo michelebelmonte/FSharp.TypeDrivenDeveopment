@@ -177,3 +177,4 @@
 /.vs/PollingConsumer/v16/TestStore/0/testlog.manifest
 /.vs/PollingConsumer/v16/TestStore/0/000.testlog
 /.vs/PollingConsumer/DesignTimeBuild/.dtbcache.v2
+/PollingConsumer/obj/x64/Debug/net48/PollingConsumer.fsprojAssemblyReference.cache

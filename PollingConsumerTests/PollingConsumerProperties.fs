@@ -35,3 +35,18 @@ let ``transitionFromNoMessage returns corrent result when it should not idle``
     let expected = StoppedState
 
     expected =! actual
+
+[<Property>]
+let ``transitionFromReady returns corrent result when it should not idle``
+    (nm:ReadyData)
+    (pollRes : Timed<MessageHandler option>) =
+
+    let shouldPoll _ = true
+    let poll _ = pollRes
+
+    let actual : State =
+        transitionFromReady shouldPoll poll nm
+
+    let expected = StoppedState
+
+    expected =! actual
