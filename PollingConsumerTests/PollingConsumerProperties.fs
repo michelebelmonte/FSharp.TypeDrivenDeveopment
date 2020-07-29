@@ -52,7 +52,7 @@ let ``transitionFromReady returns corrent result when it should not poll``
     expected =! actual
 
 [<Property>]
-let ``transitionFromReady returns corrent result when polling no handler``
+let ``transitionFromReady returns corrent result when polling no message``
     (r:ReadyData)
     (mh : Timed<unit>) =
 
@@ -63,5 +63,20 @@ let ``transitionFromReady returns corrent result when polling no handler``
         transitionFromReady shouldPoll poll r
 
     let expected = mh |> Untimed.withResult r.Result |> NoMessageState
+
+    expected =! actual
+
+[<Property>]
+let ``transitionFromReady returns corrent result when polling a message``
+    (r:ReadyData)
+    (mh : Timed<MessageHandler>) =
+
+    let shouldPoll _ = true
+    let poll _ = mh |> Untimed.withResult ( Some mh.Result)
+
+    let actual : State =
+        transitionFromReady shouldPoll poll r
+
+    let expected = mh |> Untimed.withResult (r.Result,mh.Result) |> ReceivedMessageState
 
     expected =! actual
