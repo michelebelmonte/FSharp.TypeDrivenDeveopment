@@ -49,6 +49,6 @@ let transitionFromReady shouldPoll poll (rd: ReadyData): State =
         | None ->
             msg
             |> Untimed.withResult rd.Result
-            |> ReadyState
+            |> NoMessageState
     else
         StoppedState
