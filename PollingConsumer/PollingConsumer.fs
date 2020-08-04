@@ -52,3 +52,11 @@ let transitionFromReady shouldPoll poll (rd: ReadyData): State =
             |> NoMessageState
     else
         StoppedState
+
+let rec run trans state =
+    let nextState = trans state
+    match nextState with
+    | StoppedState -> StoppedState
+    | _ -> run trans nextState
+
+let unfurl getNext state = Seq.initInfinite (fun _ -> getNext state)

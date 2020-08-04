@@ -1,5 +1,6 @@
 ﻿module PollingConsumerProperties
 
+open FsCheck
 open FsCheck.Xunit
 open Swensen.Unquote
 open TypeDrivenDevelopment.PollingConsumer
@@ -80,3 +81,38 @@ let ``transitionFromReady returns corrent result when polling a message``
     let expected = mh |> Untimed.withResult (r.Result,mh.Result) |> ReceivedMessageState
 
     expected =! actual
+
+[<Property>]
+let ``run runs untill stopped``
+   (states : State list)
+   (startState : State) =
+   (states |> List.exists ((=) StoppedState)) ==> lazy
+
+   let q = System.Collections.Generic.Queue<State> states
+   let transition _ = q.Dequeue()
+
+   let actual = run transition startState
+
+   StoppedState =! actual
+
+[<Property>]
+let ``unfurl returns correct sequence with constant transition``
+    (initialValue: string)
+    (constantValue: string)
+    (count : byte)=
+    let getNext _= constantValue
+    let actual : string seq = unfurl getNext initialValue
+    test <@
+        actual
+        |> Seq.skip 1
+        |> Seq.truncate (int count)
+        |> Seq. forall ((=) constantValue)
+    @>
+
+[<Property>]
+let ``unfurl returns as many values as requested``
+    (initialValue: System.TimeSpan)
+    (count : byte)=
+
+    let actual : System.TimeSpan seq = unfurl id initialValue
+    int count =! (actual |> Seq.truncate (int count) |> Seq.length)
