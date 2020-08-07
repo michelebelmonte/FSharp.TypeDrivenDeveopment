@@ -63,3 +63,10 @@ let rec unfurl getNext state = seq {
     yield state
     let nextState = getNext state
     yield! unfurl getNext nextState}
+
+let isStopped x =
+    match x with
+    | StoppedState -> true
+    | _ -> false
+
+let run' states = states |> Seq.last

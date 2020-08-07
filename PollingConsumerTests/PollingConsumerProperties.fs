@@ -125,3 +125,18 @@ let ``unfurl returns correct values``
     let expected = [int initialValue .. int initialValue + int count]
     expected =!
         (actual |> Seq.truncate (int count + 1) |> Seq.toList)
+
+type WithoutStoppedState =
+    static member State() =
+        Arb.Default.Derive ()
+        |> Arb.filter (not << isStopped)
+
+[<Property(Arbitrary = [|typeof<WithoutStoppedState>|])>]
+let ``run' returns element of sequence without stops``
+    (states : State list)=
+    not states.IsEmpty ==> lazy
+
+    let actual : State = run' states
+
+    let expected = states |> Seq.last
+    expected=!actual
