@@ -116,3 +116,12 @@ let ``unfurl returns as many values as requested``
 
     let actual : System.TimeSpan seq = unfurl id initialValue
     int count =! (actual |> Seq.truncate (int count) |> Seq.length)
+
+[<Property>]
+let ``unfurl returns correct values``
+    (initialValue : byte)
+    (count : byte) =
+    let actual = unfurl ((+) 1) (int initialValue)
+    let expected = [int initialValue .. int initialValue + int count]
+    expected =!
+        (actual |> Seq.truncate (int count + 1) |> Seq.toList)

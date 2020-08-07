@@ -59,4 +59,7 @@ let rec run trans state =
     | StoppedState -> StoppedState
     | _ -> run trans nextState
 
-let unfurl getNext state = Seq.initInfinite (fun _ -> getNext state)
+let rec unfurl getNext state = seq {
+    yield state
+    let nextState = getNext state
+    yield! unfurl getNext nextState}
