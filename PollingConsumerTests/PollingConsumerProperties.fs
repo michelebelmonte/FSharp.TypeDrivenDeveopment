@@ -33,7 +33,7 @@ let ``transitionFromNoMessage returns corrent result when it should not idle``
     let actual : State =
         transitionFromNoMessage shouldIdle idle nm
 
-    let expected = StoppedState
+    let expected = StoppedState nm.Result
 
     expected =! actual
 
@@ -48,7 +48,7 @@ let ``transitionFromReady returns corrent result when it should not poll``
     let actual : State =
         transitionFromReady shouldPoll poll r
 
-    let expected = StoppedState
+    let expected = StoppedState r.Result
 
     expected =! actual
 
@@ -81,19 +81,6 @@ let ``transitionFromReady returns corrent result when polling a message``
     let expected = mh |> Untimed.withResult (r.Result,mh.Result) |> ReceivedMessageState
 
     expected =! actual
-
-[<Property>]
-let ``run runs untill stopped``
-   (states : State list)
-   (startState : State) =
-   (states |> List.exists ((=) StoppedState)) ==> lazy
-
-   let q = System.Collections.Generic.Queue<State> states
-   let transition _ = q.Dequeue()
-
-   let actual = run transition startState
-
-   StoppedState =! actual
 
 [<Property>]
 let ``unfurl returns correct sequence with constant transition``

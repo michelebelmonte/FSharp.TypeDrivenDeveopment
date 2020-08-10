@@ -19,13 +19,14 @@ type MessageHandler =
 type ReadyData = Timed<TimeSpan list>
 type ReceivedMessageData = Timed<TimeSpan list * MessageHandler>
 type NoMessageData = Timed<TimeSpan list>
+type StoppedData = TimeSpan list
 
 //States as discriminate union
 type State =
     | ReadyState of ReadyData
     | ReceivedMessageState of ReceivedMessageData
     | NoMessageState of NoMessageData
-    | StoppedState
+    | StoppedState of StoppedData
 
 //Transitions: Data -> PollingConsumer
 let transitionFromStopped = StoppedState
@@ -36,7 +37,7 @@ let transitionFromNoMessage shouldIdle idle (nm: NoMessageData): State =
         |> Untimed.withResult nm.Result
         |> ReadyState
     else
-        StoppedState
+        StoppedState nm.Result
 
 let transitionFromReady shouldPoll poll (rd: ReadyData): State =
     if shouldPoll rd then
@@ -51,7 +52,7 @@ let transitionFromReady shouldPoll poll (rd: ReadyData): State =
             |> Untimed.withResult rd.Result
             |> NoMessageState
     else
-        StoppedState
+        StoppedState rd.Result
 
 let rec run trans state =
     let nextState = trans state
@@ -70,7 +71,20 @@ let isStopped x =
     | _ -> false
 
 let run' states =
-    if Seq.exists (isStopped) states then
-        StoppedState
-    else
-        Seq.last states
+    // Modified from http://stackoverflow.com/a/12564899/126014
+    let takeUntil predicate (s : seq<_>) =
+      /// Iterates over the enumerator, yielding elements and
+      /// stops after an element for which the predicate holds
+      let rec loop (en : System.Collections.Generic.IEnumerator<_>) = seq {
+        if en.MoveNext() then
+          // Always yield the current, stop when predicate becomes true
+          yield en.Current
+          if not (predicate en.Current) then
+            yield! loop en }
+
+      // Get enumerator of the sequence and yield all results
+      // (making sure that the enumerator gets disposed)
+      seq { use en = s.GetEnumerator()
+            yield! loop en }
+
+    states |> takeUntil isStopped |> Seq.last
