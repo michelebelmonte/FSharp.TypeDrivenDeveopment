@@ -140,3 +140,11 @@ let ``run' returns element of sequence without stops``
 
     let expected = states |> Seq.last
     expected=!actual
+
+[<Property>]
+let ``run' returns StoppedState when it occurs``
+    (states: State list) =
+    states |> List.exists isStopped ==> lazy
+
+    let actual = run' states
+    test <@ isStopped actual @>

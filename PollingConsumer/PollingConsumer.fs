@@ -69,4 +69,8 @@ let isStopped x =
     | StoppedState -> true
     | _ -> false
 
-let run' states = states |> Seq.last
+let run' states =
+    if Seq.exists (isStopped) states then
+        StoppedState
+    else
+        Seq.last states
