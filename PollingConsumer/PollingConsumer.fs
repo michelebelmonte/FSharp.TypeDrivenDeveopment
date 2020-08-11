@@ -88,3 +88,24 @@ let run' states =
             yield! loop en }
 
     states |> takeUntil isStopped |> Seq.last
+
+let startOn clock =
+    []
+    |> Timed.capture clock
+    |> ReadyState
+
+//Transitions
+let transitionFromReceived (rm : ReceivedMessageData) =
+    let durations, messageHandler = rm.Result
+    let t = messageHandler.Handle ()
+    let pollDuration = rm.Duration
+    let handleDuration = t.Duration
+    let totalDuration = pollDuration + handleDuration
+    t |> Untimed.withResult (totalDuration :: durations) |> ReadyState
+
+let transition shouldPoll poll shouldIdle idle state =
+    match state with
+    | ReadyState r -> transitionFromReady shouldPoll poll r
+    | ReceivedMessageState rm -> transitionFromReceived rm
+    | NoMessageState nm -> transitionFromNoMessage shouldIdle idle nm
+    | StoppedState s -> transitionFromStopped s
