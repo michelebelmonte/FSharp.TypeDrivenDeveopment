@@ -1,55 +1,42 @@
-﻿module TypeDrivenDevelopment.Timed
+﻿module Timed
 
 open System
 
 type Timed<'a> =
-    { Started: DateTimeOffset
-      Stopped: DateTimeOffset
-      Result: 'a }
+    {
+        Started : DateTimeOffset
+        Stopped : DateTimeOffset
+        Result : 'a
+    }
     member this.Duration = this.Stopped - this.Started
+
+let capture clock x =
+    let now = clock ()
+    { Started = now; Stopped = now; Result = x }
+
+let map clock f x =
+    let result = f x.Result
+    let stopped = clock ()
+    { Started = x.Started; Stopped = stopped; Result = result }
+
+let timeOn clock f x = x |> capture clock |> map clock f
 
 module Untimed =
     let map f x =
-        { Started = x.Started
-          Stopped = x.Stopped
-          Result = f x.Result }
+        { Started = x.Started; Stopped = x.Stopped; Result = f x.Result }
 
-    let withResult result x = map (fun _ -> result) x
-
-module Timed =
-    let capture clock x =
-        let now = clock()
-        { Started = now
-          Stopped = now
-          Result = x }
-
-    let map clock f x =
-        let result = f x.Result
-        let now = clock()
-        { Started = x.Started
-          Stopped = now
-          Result = result }
-
-    let timedOn clock f x =
-        x
-        |> capture clock
-        |> map clock f
+    let withResult newResult x = map (fun _ -> newResult) x
 
 module Clocks =
+    let machineClock () = DateTimeOffset.Now
+
+    let acclock (start : DateTimeOffset) rate () =
+        let now = DateTimeOffset.Now
+        let elapsed = now - start
+        start.AddTicks (elapsed.Ticks * rate)
+
     open System.Collections.Generic
 
-    let toString (x: DateTimeOffset) = x.ToString "T"
+    let qlock (q : Queue<DateTimeOffset>) = q.Dequeue
 
-    let machine() = DateTimeOffset.Now
-
-    let acceleratedClock (start: DateTimeOffset) rate () =
-        let now = machine()
-        let span = now - start
-        start.AddTicks(span.Ticks * rate)
-
-    let queueClock (q: Queue<DateTimeOffset>) = q.Dequeue
-
-    let seqClock (s: seq<DateTimeOffset>) =
-        s
-        |> Queue<DateTimeOffset>
-        |> queueClock
+    let seqlock (l : DateTimeOffset seq) = Queue<DateTimeOffset> l |> qlock

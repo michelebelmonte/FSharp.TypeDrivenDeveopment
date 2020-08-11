@@ -3,8 +3,8 @@
 open FsCheck
 open FsCheck.Xunit
 open Swensen.Unquote
-open TypeDrivenDevelopment.PollingConsumer
-open TypeDrivenDevelopment.Timed
+open PollingConsumer
+open Timed
 
 [<Property>]
 let ``transitionFromNoMessage returns corrent result when it should idle``
@@ -123,7 +123,7 @@ let ``run' returns element of sequence without stops``
     (states : State list)=
     not states.IsEmpty ==> lazy
 
-    let actual : State = run' states
+    let actual : State = run states
 
     let expected = states |> Seq.last
     expected=!actual
@@ -133,5 +133,5 @@ let ``run' returns StoppedState when it occurs``
     (states: State list) =
     states |> List.exists isStopped ==> lazy
 
-    let actual = run' states
+    let actual = run states
     test <@ isStopped actual @>

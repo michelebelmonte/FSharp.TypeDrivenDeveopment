@@ -3,11 +3,16 @@
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="ColorPrint.fs" />
     <Compile Include="Timed.fs" />
     <Compile Include="PollingConsumer.fs" />
+    <Compile Include="Implementations.fs" />
+    <Compile Include="Statistics.fs" />
+    <Compile Include="Simulation.fs" />
   </ItemGroup>
 
 </Project>
